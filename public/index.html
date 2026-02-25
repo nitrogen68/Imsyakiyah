@@ -1,0 +1,544 @@
+<?php  
+if (isset($_GET['provinsi'])) {  
+    $_GET['provinsi'] = urldecode($_GET['provinsi']);  
+    $_GET['provinsi'] = str_replace('-', ' ', $_GET['provinsi']);  
+}  
+  
+if (isset($_GET['kabkota'])) {  
+    $_GET['kabkota'] = urldecode($_GET['kabkota']);  
+    $_GET['kabkota'] = str_replace('-', ' ', $_GET['kabkota']);  
+}  
+?>  
+<!DOCTYPE html>  
+<html lang="id">  
+<head>  
+    <meta charset="UTF-8">  
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">  
+    <title>Jadwal Imsakiyah 2026</title>  
+    <script src="https://cdn.tailwindcss.com"></script>  
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>  
+    <style>  
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }  
+        .grid-card { transition: all 0.3s ease; }  
+        #captureArea { background-color: #f8fafc; border-radius: 2.5rem; padding: 15px; }  
+        select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2364748b'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 0.75rem center; background-size: 1rem; }  
+    </style>  
+</head>  
+<body class="bg-slate-50 text-slate-900 min-h-screen">  
+  
+    <div class="max-w-md mx-auto px-6 py-10">  
+        <header class="text-center mb-8">  
+            <h1 class="text-3xl font-extrabold text-emerald-800 tracking-tight">Imsakiyah 2026</h1>  
+            <p class="text-slate-500 font-medium mt-1 uppercase text-xs tracking-widest">Ramadhan 1447 H</p>  
+        </header>  
+  
+        <div class="bg-white p-5 rounded-3xl shadow-sm border border-slate-200 mb-8">  
+            <div class="space-y-4">  
+                <div class="space-y-3">  
+                    <div>  
+                        <label class="text-[10px] font-bold text-slate-400 uppercase ml-2">Provinsi</label>  
+                        <select id="provinsi" onchange="loadKabKota()"   
+                            class="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-2 focus:ring-emerald-500 outline-none text-sm font-semibold text-slate-700 mt-1">  
+                            <option value="">Memuat Provinsi...</option>  
+                        </select>  
+                    </div>  
+                    <div>  
+                        <label class="text-[10px] font-bold text-slate-400 uppercase ml-2">Kabupaten / Kota</label>  
+                        <select id="kabkota"   
+                            class="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-2 focus:ring-emerald-500 outline-none text-sm font-semibold text-slate-700 mt-1">  
+                            <option value="">Pilih Provinsi Terlebih Dahulu</option>  
+                        </select>  
+                    </div>  
+                </div>  
+                <button onclick="getJadwal()" id="btnCari"  
+                    class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-4 rounded-2xl transition shadow-lg shadow-emerald-200 active:scale-95 disabled:opacity-50">  
+                    Tampilkan Jadwal  
+                </button>  
+            </div>  
+        </div>  
+  
+        <div id="captureArea">  
+            <div id="resultWrapper" class="hidden space-y-4">  
+                  
+                <div class="bg-emerald-700 p-6 rounded-[2rem] text-white text-center shadow-xl relative overflow-hidden">  
+                    <div class="relative z-10">  
+                        <p class="text-emerald-200 text-[10px] font-bold uppercase tracking-widest mb-1">Jadwal Hari Ini</p>  
+                        <h2 id="displayTanggal" class="text-2xl font-extrabold tracking-tight">-- -- 2026</h2>  
+                        <p id="displayLokasi" class="text-emerald-100 text-[10px] opacity-80 mt-1 uppercase font-bold tracking-tighter italic">--</p>  
+                    </div>  
+                    <div class="absolute -right-4 -top-4 w-24 h-24 bg-white/10 rounded-full"></div>  
+                </div>  
+  
+                <div class="flex flex-col items-center -mt-8 mb-2 relative z-20 space-y-2">  
+  
+    <!-- NU -->  
+    <div class="bg-white px-5 py-2 rounded-full shadow-md border border-slate-100 text-center leading-none">  
+        <span class="text-[9px] font-bold text-slate-400 uppercase tracking-widest align-middle">  
+            NU: Puasa Ke-  
+        </span>  
+        <span id="puasaNU"  
+              class="text-emerald-600 font-extrabold text-sm inline-block align-middle leading-none ml-1">  
+            --  
+        </span>  
+    </div>  
+  
+    <!-- Muhammadiyah -->  
+    <div class="bg-white px-5 py-2 rounded-full shadow-md border border-slate-100 text-center leading-none">  
+        <span class="text-[9px] font-bold text-slate-400 uppercase tracking-widest align-middle">  
+            Muhammadiyah: Puasa Ke-  
+        </span>  
+        <span id="puasaMD"  
+              class="text-blue-600 font-extrabold text-sm inline-block align-middle leading-none ml-1">  
+            --  
+        </span>  
+    </div>  
+  
+</div>  
+                <div class="grid grid-cols-2 gap-4">  
+    <div class="grid-card bg-white p-5 rounded-3xl border border-slate-100 shadow-sm text-center">  
+        <p class="text-slate-400 text-[10px] font-bold uppercase mb-2">Imsak</p>  
+        <p id="valImsak" class="text-2xl font-black text-emerald-600">--:--</p>  
+        <p id="statusImsak" class="text-[9px] font-bold text-emerald-500 mt-1"></p>  
+    </div>  
+    <div class="grid-card bg-white p-5 rounded-3xl border border-slate-100 shadow-sm text-center">  
+        <p class="text-slate-400 text-[10px] font-bold uppercase mb-2">Subuh</p>  
+        <p id="valSubuh" class="text-2xl font-black text-slate-800">--:--</p>  
+        <p id="statusSubuh" class="text-[9px] font-bold text-emerald-500 mt-1"></p>  
+    </div>  
+    <div class="grid-card bg-white p-5 rounded-3xl border border-slate-100 shadow-sm text-center">  
+        <p class="text-slate-400 text-[10px] font-bold uppercase mb-2">Dzuhur</p>  
+        <p id="valDzuhur" class="text-2xl font-black text-slate-800">--:--</p>  
+        <p id="statusDzuhur" class="text-[9px] font-bold text-emerald-500 mt-1"></p>  
+    </div>  
+    <div class="grid-card bg-white p-5 rounded-3xl border border-slate-100 shadow-sm text-center">  
+        <p class="text-slate-400 text-[10px] font-bold uppercase mb-2">Ashar</p>  
+        <p id="valAshar" class="text-2xl font-black text-slate-800">--:--</p>  
+        <p id="statusAshar" class="text-[9px] font-bold text-emerald-500 mt-1"></p>  
+    </div>  
+    <div class="grid-card bg-orange-50 p-5 rounded-3xl border border-orange-100 shadow-sm text-center border-b-4 border-orange-400">  
+        <p class="text-orange-500 text-[10px] font-bold uppercase mb-2">Maghrib</p>  
+        <p id="valMaghrib" class="text-2xl font-black text-orange-600">--:--</p>  
+        <p id="statusMaghrib" class="text-[9px] font-bold text-orange-500 mt-1"></p>  
+    </div>  
+    <div class="grid-card bg-white p-5 rounded-3xl border border-slate-100 shadow-sm text-center">  
+        <p class="text-slate-400 text-[10px] font-bold uppercase mb-2">Isya</p>  
+        <p id="valIsya" class="text-2xl font-black text-slate-800">--:--</p>  
+        <p id="statusIsya" class="text-[9px] font-bold text-emerald-500 mt-1"></p>  
+    </div>  
+</div>  
+  
+  
+  
+                <button onclick="sharePresetLink()" id="btnShareLink" class="mt-4 w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-2xl transition shadow-lg shadow-blue-200 active:scale-95 hidden">  
+                    Bagikan Link Lokasi Ini  
+                </button>  
+            </div>  
+        </div>  
+  
+        <div id="screenshotAction" class="hidden mt-8 text-center">  
+  
+    <!-- Tombol Utama -->  
+    <button id="btnDownloadMain"  
+        onclick="showDownloadOptions()"  
+        class="bg-slate-800 hover:bg-slate-900 text-white font-bold py-4 px-10 rounded-2xl transition flex items-center gap-2 mx-auto shadow-xl active:scale-95">  
+  
+        Download Gambar  
+        <span class="text-xs">▼</span>  
+    </button>  
+  
+    <!-- Opsi Download -->  
+    <div id="downloadOptions" class="hidden mt-4 flex justify-center gap-3">  
+  
+        <button onclick="handleDownload(true)"  
+            class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-5 rounded-xl shadow-md">  
+            Dengan Kutipan  
+        </button>  
+  
+        <button onclick="handleDownload(false)"  
+            class="bg-slate-700 hover:bg-slate-800 text-white font-bold py-3 px-5 rounded-xl shadow-md">  
+            Tanpa Kutipan  
+        </button>  
+  
+        <button onclick="cancelDownload()"  
+            class="bg-red-500 hover:bg-red-600 text-white font-bold py-3 px-5 rounded-xl shadow-md">  
+            Cancel  
+        </button>  
+  
+    </div>  
+  
+</div>  
+  
+  
+    <!-- Dropdown Opsi -->  
+    <div id="downloadMenu" class="hidden absolute left-1/2 -translate-x-1/2 mt-4 bg-white shadow-xl rounded-xl overflow-hidden border w-60">  
+        <button onclick="downloadScreenshot(true)"   
+            class="w-full px-4 py-3 hover:bg-slate-100 text-sm">  
+            Dengan Kutipan  
+        </button>  
+        <button onclick="downloadScreenshot(false)"   
+            class="w-full px-4 py-3 hover:bg-slate-100 text-sm">  
+            Tanpa Kutipan  
+        </button>  
+    </div>  
+  
+</div>  
+  
+  
+        <div id="placeholder" class="py-20 text-center">  
+            <div class="w-12 h-12 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>  
+            <p class="text-slate-400 text-sm font-medium">Menyiapkan Data Wilayah...</p>  
+        </div>  
+    </div>  
+  
+    <script>  
+    let imsakTimeGlobal = null;  
+  
+    // Logika Perhitungan Hari Puasa Permanent  
+    function updateHariPuasa() {  
+        const tglSekarangObj = new Date();  
+        tglSekarangObj.setHours(0, 0, 0, 0);  
+  
+        const ramadanNU = new Date('2026-02-19');  
+        const ramadanMD = new Date('2026-02-18');  
+  
+        const hitungHari = (tglMulai) => {  
+            const selisih = tglSekarangObj - tglMulai;  
+            const hari = Math.floor(selisih / (1000 * 60 * 60 * 24)) + 1;  
+            return hari > 0 ? hari : '-';  
+        };  
+  
+        document.getElementById('puasaNU').innerText = hitungHari(ramadanNU);  
+        document.getElementById('puasaMD').innerText = hitungHari(ramadanMD);  
+    }  
+  
+    function getUrlParams() {  
+        const params = new URLSearchParams(window.location.search);  
+        return {  
+            provinsi: params.get('provinsi'),  
+            kabkota: params.get('kabkota')  
+        };  
+    }  
+  
+    window.onload = async function() {  
+        updateHariPuasa();  
+        const urlParams = getUrlParams();  
+  
+        try {  
+            const response = await fetch('https://equran.id/api/v2/imsakiyah/provinsi');  
+            const res = await response.json();  
+  
+            if (res.code === 200) {  
+                const selectProv = document.getElementById('provinsi');  
+                selectProv.innerHTML = res.data.map(p => {  
+                    const selected = urlParams.provinsi === p ? 'selected' : (!urlParams.provinsi && p === 'DKI Jakarta' ? 'selected' : '');  
+                    return `<option value="${p}" ${selected}>${p}</option>`;  
+                }).join('');  
+  
+                await loadKabKota(urlParams.kabkota);  
+                await getJadwal();  
+            }  
+        } catch (e) {  
+            alert("Gagal mengambil data provinsi.");  
+        }  
+    };  
+  
+    async function loadKabKota(selectedKab = null) {  
+        const prov = document.getElementById('provinsi').value;  
+        const selectKab = document.getElementById('kabkota');  
+        selectKab.innerHTML = `<option value="">Memuat...</option>`;  
+  
+        try {  
+            const response = await fetch('https://equran.id/api/v2/imsakiyah/kabkota', {  
+                method: 'POST',  
+                headers: { 'Content-Type': 'application/json' },  
+                body: JSON.stringify({ provinsi: prov })  
+            });  
+            const res = await response.json();  
+            if (res.code === 200) {  
+                selectKab.innerHTML = res.data.map(k => {  
+                    const selected = selectedKab === k ? 'selected' : (!selectedKab && k === 'Kota Jakarta' ? 'selected' : '');  
+                    return `<option value="${k}" ${selected}>${k}</option>`;  
+                }).join('');  
+            }  
+        } catch (e) {  
+            selectKab.innerHTML = `<option>Gagal memuat data</option>`;  
+        }  
+    }  
+  
+  
+  
+  
+let jadwalHariIni = null; // Simpan seluruh waktu shalat  
+  
+async function getJadwal() {  
+    const provinsi = document.getElementById('provinsi').value;  
+    const kabkota = document.getElementById('kabkota').value;  
+    const btn = document.getElementById('btnCari');  
+    const hariIni = new Date();  
+    const tglSekarang = hariIni.getDate();  
+  
+    if(!kabkota) return;  
+  
+    btn.disabled = true;  
+    btn.innerText = "Mencari...";  
+  
+    try {  
+        const response = await fetch('https://equran.id/api/v2/imsakiyah', {  
+            method: 'POST',  
+            headers: { 'Content-Type': 'application/json' },  
+            body: JSON.stringify({ provinsi, kabkota })  
+        });  
+        const res = await response.json();  
+  
+        if (res.code === 200) {  
+            const item = res.data.imsakiyah.find(i => i.tanggal === tglSekarang);  
+            if (item) {  
+                // Simpan jadwal ke objek global untuk countdown  
+                jadwalHariIni = {  
+                    Imsak: item.imsak,  
+                    Subuh: item.subuh,  
+                    Dzuhur: item.dzuhur,  
+                    Ashar: item.ashar,  
+                    Maghrib: item.maghrib,  
+                    Isya: item.isya  
+                };  
+  
+                startCountdown(); // Jalankan fungsi estafet  
+  
+                document.getElementById('placeholder').classList.add('hidden');  
+                document.getElementById('resultWrapper').classList.remove('hidden');  
+                document.getElementById('screenshotAction').classList.remove('hidden');  
+                document.getElementById('btnShareLink').classList.remove('hidden');  
+  
+                const opt = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' };  
+                document.getElementById('displayTanggal').innerText = hariIni.toLocaleDateString('id-ID', opt);  
+                document.getElementById('displayLokasi').innerText = `${res.data.kabkota}, ${res.data.provinsi}`;  
+  
+                document.getElementById('valImsak').innerText = item.imsak;  
+                document.getElementById('valSubuh').innerText = item.subuh;  
+                document.getElementById('valDzuhur').innerText = item.dzuhur;  
+                document.getElementById('valAshar').innerText = item.ashar;  
+                document.getElementById('valMaghrib').innerText = item.maghrib;  
+                document.getElementById('valIsya').innerText = item.isya;  
+            }  
+        }  
+    } catch (e) {  
+        alert("Gagal memuat jadwal.");  
+    } finally {  
+        btn.disabled = false;  
+        btn.innerText = "Tampilkan Jadwal";  
+    }  
+}  
+  
+function startCountdown() {  
+    if (window.imsakInterval) clearInterval(window.imsakInterval);  
+      
+    window.imsakInterval = setInterval(() => {  
+        if (!jadwalHariIni) return;  
+  
+        const now = new Date();  
+        const urutan = ['Imsak', 'Subuh', 'Dzuhur', 'Ashar', 'Maghrib', 'Isya'];  
+        let targetDitemukan = false;  
+  
+        urutan.forEach((label) => {  
+            const elStatus = document.getElementById('status' + label);  
+            const [h, m] = jadwalHariIni[label].split(':');  
+            const targetTime = new Date();  
+            targetTime.setHours(parseInt(h), parseInt(m), 0, 0);  
+  
+            if (now >= targetTime) {  
+                // Jika waktu sudah lewat  
+                elStatus.innerText = `${label} Telah Tiba`;  
+                elStatus.classList.remove('text-emerald-500', 'text-orange-500');  
+                elStatus.classList.add('text-slate-400'); // Warna abu-abu halus untuk yang sudah lewat  
+            } else if (!targetDitemukan) {  
+                // Jika ini adalah waktu terdekat berikutnya  
+                targetDitemukan = true;  
+                const diff = targetTime - now;  
+                const hours = Math.floor(diff / (1000 * 60 * 60)).toString().padStart(2, '0');  
+                const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60)).toString().padStart(2, '0');  
+                const secs = Math.floor((diff % (1000 * 60)) / 1000).toString().padStart(2, '0');  
+                  
+                elStatus.innerHTML = `<span class="text-black">${hours}:${mins}:${secs}</span> menuju ${label}`;  
+                elStatus.classList.add('text-emerald-500');  
+            } else {  
+                // Waktu yang masih lama (antrian berikutnya)  
+                elStatus.innerText = "";  
+            }  
+        });  
+  
+        // Jika semua waktu sudah lewat hari ini  
+        if (!targetDitemukan) {  
+            // Opsional: Bisa dikosongkan atau beri pesan "Jadwal Selesai"  
+        }  
+    }, 1000);  
+}  
+  
+  
+  
+      
+function sharePresetLink() {  
+    const provName = document.getElementById('provinsi').value;  
+    const kabName = document.getElementById('kabkota').value;  
+      
+    const prov = encodeURIComponent(provName);  
+    const kab = encodeURIComponent(kabName);  
+      
+    // Format link sesuai keinginan Anda  
+    const link = `${window.location.origin}/imsyakiyah?provinsi=${prov}&kabkota=${kab}`;  
+      
+    // Teks pengantar yang diminta  
+    const textToShare = `Berikut jadwal imsakiyah untuk lokasi Anda ${kabName}, ${provName}:`;  
+  
+    if (navigator.share) {  
+        navigator.share({   
+            title: "Jadwal Imsakiyah 2026",  
+            text: textToShare,  
+            url: link   
+        });  
+    } else {  
+        // Gabungkan teks dan link untuk clipboard sebagai cadangan  
+        const fullContent = `${textToShare}\n${link}`;  
+        navigator.clipboard.writeText(fullContent);  
+        alert("Link dan info lokasi berhasil disalin!");  
+    }  
+}  
+  
+function toggleDownloadMenu() {  
+    const menu = document.getElementById("downloadMenu");  
+    menu.classList.toggle("hidden");  
+}  
+  
+     
+  
+async function downloadScreenshot(withQuote = false) {  
+  
+    const original = document.getElementById('captureArea');  
+    const menu = document.getElementById("downloadMenu");  
+    menu.classList.add("hidden");  
+  
+    try {  
+  
+        // 🔁 Clone area agar tidak menyentuh DOM asli  
+        const clone = original.cloneNode(true);  
+  
+        clone.style.position = "absolute";  
+        clone.style.left = "-9999px";  
+        clone.style.top = "0";  
+        clone.style.width = original.offsetWidth + "px";  
+        clone.style.zIndex = "-1";  
+  
+        document.body.appendChild(clone);  
+  
+        // ➕ Tambahkan kutipan HANYA ke clone  
+        if (withQuote) {  
+  
+            const quote = await getRandomTranslation();  
+  
+            const quoteDiv = document.createElement("div");  
+            quoteDiv.style.marginTop = "25px";  
+            quoteDiv.style.padding = "15px";  
+            quoteDiv.style.fontSize = "14px";  
+            quoteDiv.style.textAlign = "center";  
+            quoteDiv.style.borderTop = "1px solid #ddd";  
+  
+            quoteDiv.innerHTML = `  
+                <div style="font-style:italic;">  
+                    "${quote.text}"  
+                </div>  
+                <div style="margin-top:8px; font-size:12px; color:gray;">  
+                    (${quote.surah})  
+                </div>  
+            `;  
+  
+            clone.appendChild(quoteDiv);  
+        }  
+  
+          
+// ⏳ Pastikan font Google sudah benar-benar loaded  
+if (document.fonts && document.fonts.ready) {  
+    await document.fonts.ready;  
+}  
+  
+// 📸 Screenshot clone  
+const canvas = await html2canvas(clone, {  
+    scale: 2,  
+    backgroundColor: "#f8fafc",  
+    useCORS: true,  
+    ignoreElements: function (el) {  
+        return el.id === "btnShareLink";  
+    }  
+});  
+  
+        // 🗑 Hapus clone setelah selesai  
+        document.body.removeChild(clone);  
+  
+        // 🎲 Random filename  
+        function generateRNG(length = 6) {  
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';  
+            let result = '';  
+            for (let i = 0; i < length; i++) {  
+                result += chars.charAt(Math.floor(Math.random() * chars.length));  
+            }  
+            return result;  
+        }  
+  
+        const rng = generateRNG();  
+  
+        const link = document.createElement('a');  
+        link.download = `Imsakiyah_2026_${rng}.png`;  
+        link.href = canvas.toDataURL("image/png");  
+        link.click();  
+  
+    } catch (error) {  
+        console.error(error);  
+    }  
+}  
+  
+  
+  
+async function getRandomTranslation() {  
+  
+    while (true) {  
+  
+        const randomSurat = Math.floor(Math.random() * 114) + 1;  
+  
+        const response = await fetch(`https://equran.id/api/v2/surat/${randomSurat}`);  
+        const data = await response.json();  
+  
+        const surat = data.data;  
+        const jumlahAyat = surat.jumlahAyat;  
+  
+        const randomIndex = Math.floor(Math.random() * jumlahAyat);  
+        const ayat = surat.ayat[randomIndex];  
+  
+        // Filter pendek  
+        if (ayat.teksIndonesia.length < 160) {  
+            return {  
+                text: ayat.teksIndonesia,  
+                surah: surat.namaLatin + " (" + ayat.nomorAyat + ")"  
+            };  
+        }  
+    }  
+}  
+  
+  
+function showDownloadOptions() {  
+    document.getElementById("btnDownloadMain").classList.add("hidden");  
+    document.getElementById("downloadOptions").classList.remove("hidden");  
+}  
+  
+function cancelDownload() {  
+    document.getElementById("downloadOptions").classList.add("hidden");  
+    document.getElementById("btnDownloadMain").classList.remove("hidden");  
+}  
+  
+async function handleDownload(withQuote) {  
+    await downloadScreenshot(withQuote);  
+    cancelDownload(); // Kembali ke tombol utama setelah selesai  
+}  
+  
+    </script>  
+</body>  
+</html>  
