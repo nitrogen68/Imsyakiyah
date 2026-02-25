@@ -1,0 +1,11 @@
+{
+  "name": "imsakiyah-2026",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Imsakiyah 2026 with Random Quran Quote Screenshot Feature",
+  "scripts": {
+    "dev": "vercel dev",
+    "build": "echo 'Static build - no build step required'",
+    "start": "vercel dev"
+  }
+}
