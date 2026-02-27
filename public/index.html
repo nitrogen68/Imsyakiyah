@@ -14,7 +14,7 @@ if (isset($_GET['kabkota'])) {
 <head>  
     <meta charset="UTF-8">  
     <meta name="viewport" content="width=device-width, initial-scale=1.0">  
-    <title>Imsakiyah 2026 Dan Waktu Shalat</title>  
+    <title>Jadwal Imsakiyah 2026</title>  
     <script src="https://cdn.tailwindcss.com"></script>  
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">  
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>  
@@ -204,7 +204,7 @@ if (isset($_GET['kabkota'])) {
   
         const hitungHari = (tglMulai) => {  
             const selisih = tglSekarangObj - tglMulai;  
-            const hari = Math.floor(selisih / (1000 * 60 * 60 * 24)) + 1;  
+            const hari = Math.floor(selisih / (1000 * 60 * 60 * 24)) + 2;  
             return hari > 0 ? hari : '-';  
         };  
   
@@ -271,65 +271,73 @@ if (isset($_GET['kabkota'])) {
   
 let jadwalHariIni = null; // Simpan seluruh waktu shalat  
   
-async function getJadwal() {  
-    const provinsi = document.getElementById('provinsi').value;  
-    const kabkota = document.getElementById('kabkota').value;  
-    const btn = document.getElementById('btnCari');  
-    const hariIni = new Date();  
-    const tglSekarang = hariIni.getDate();  
-  
-    if(!kabkota) return;  
-  
-    btn.disabled = true;  
-    btn.innerText = "Mencari...";  
-  
-    try {  
-        const response = await fetch('https://equran.id/api/v2/imsakiyah', {  
-            method: 'POST',  
-            headers: { 'Content-Type': 'application/json' },  
-            body: JSON.stringify({ provinsi, kabkota })  
-        });  
-        const res = await response.json();  
-  
-        if (res.code === 200) {  
-            const item = res.data.imsakiyah.find(i => i.tanggal === tglSekarang);  
-            if (item) {  
-                // Simpan jadwal ke objek global untuk countdown  
-                jadwalHariIni = {  
-                    Imsak: item.imsak,  
-                    Subuh: item.subuh,  
-                    Dzuhur: item.dzuhur,  
-                    Ashar: item.ashar,  
-                    Maghrib: item.maghrib,  
-                    Isya: item.isya  
-                };  
-  
-                startCountdown(); // Jalankan fungsi estafet  
-  
-                document.getElementById('placeholder').classList.add('hidden');  
-                document.getElementById('resultWrapper').classList.remove('hidden');  
-                document.getElementById('screenshotAction').classList.remove('hidden');  
-                document.getElementById('btnShareLink').classList.remove('hidden');  
-  
-                const opt = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' };  
-                document.getElementById('displayTanggal').innerText = hariIni.toLocaleDateString('id-ID', opt);  
-                document.getElementById('displayLokasi').innerText = `${res.data.kabkota}, ${res.data.provinsi}`;  
-  
-                document.getElementById('valImsak').innerText = item.imsak;  
-                document.getElementById('valSubuh').innerText = item.subuh;  
-                document.getElementById('valDzuhur').innerText = item.dzuhur;  
-                document.getElementById('valAshar').innerText = item.ashar;  
-                document.getElementById('valMaghrib').innerText = item.maghrib;  
-                document.getElementById('valIsya').innerText = item.isya;  
-            }  
-        }  
-    } catch (e) {  
-        alert("Gagal memuat jadwal.");  
-    } finally {  
-        btn.disabled = false;  
-        btn.innerText = "Tampilkan Jadwal";  
-    }  
-}  
+
+
+async function getJadwal() {
+    const provinsi = document.getElementById('provinsi').value;
+    const kabkota = document.getElementById('kabkota').value;
+    const btn = document.getElementById('btnCari');
+    
+    const hariIni = new Date();
+    hariIni.setHours(0,0,0,0);
+
+    const ramadanStart = new Date('2026-02-19');
+    ramadanStart.setHours(0,0,0,0);
+
+    const selisihMili = hariIni - ramadanStart;
+    const hariRamadanKe = Math.floor(selisihMili / (1000 * 60 * 60 * 24)) + 1;
+
+    if(!kabkota || kabkota === "Memuat...") return;
+
+    btn.disabled = true;
+    btn.innerText = "Mencari...";
+
+    try {
+        const response = await fetch('https://equran.id/api/v2/imsakiyah', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ provinsi, kabkota })
+        });
+        const res = await response.json();
+
+        if (res.code === 200) {
+            const item = res.data.imsakiyah.find(i => i.tanggal === hariRamadanKe);
+            
+            if (item) {
+                jadwalHariIni = {
+                    Imsak: item.imsak, Subuh: item.subuh, Dzuhur: item.dzuhur,
+                    Ashar: item.ashar, Maghrib: item.maghrib, Isya: item.isya
+                };
+
+                startCountdown();
+                
+                // --- BAGIAN UNTUK MEMUNCULKAN TOMBOL ---
+                document.getElementById('placeholder').classList.add('hidden');
+                document.getElementById('resultWrapper').classList.remove('hidden');
+                document.getElementById('screenshotAction').classList.remove('hidden'); // Memunculkan tombol download
+                document.getElementById('btnShareLink').classList.remove('hidden');    // Memunculkan tombol bagikan
+                // ---------------------------------------
+
+                const opt = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' };
+                document.getElementById('displayTanggal').innerText = hariIni.toLocaleDateString('id-ID', opt);
+                document.getElementById('displayLokasi').innerText = `${res.data.kabkota}, ${res.data.provinsi}`;
+
+                document.getElementById('valImsak').innerText = item.imsak;
+                document.getElementById('valSubuh').innerText = item.subuh;
+                document.getElementById('valDzuhur').innerText = item.dzuhur;
+                document.getElementById('valAshar').innerText = item.ashar;
+                document.getElementById('valMaghrib').innerText = item.maghrib;
+                document.getElementById('valIsya').innerText = item.isya;
+            }
+        }
+    } catch (e) {
+        alert("Gagal memuat jadwal.");
+    } finally {
+        btn.disabled = false;
+        btn.innerText = "Tampilkan Jadwal";
+    }
+}
+
   
 function startCountdown() {  
     if (window.imsakInterval) clearInterval(window.imsakInterval);  
@@ -389,7 +397,7 @@ function sharePresetLink() {
     const link = `${window.location.origin}/imsyakiyah?provinsi=${prov}&kabkota=${kab}`;  
       
     // Teks pengantar yang diminta  
-    const textToShare = `Berikut Waktu imsakiyah Dan Waktu Shalat untuk lokasi Anda ${kabName}, ${provName}:`;  
+    const textToShare = `Berikut jadwal imsakiyah untuk lokasi Anda ${kabName}, ${provName}:`;  
   
     if (navigator.share) {  
         navigator.share({   
@@ -541,4 +549,4 @@ async function handleDownload(withQuote) {
   
     </script>  
 </body>  
-</html>  
+</html>
