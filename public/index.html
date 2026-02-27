@@ -18,6 +18,11 @@ if (isset($_GET['kabkota'])) {
     <script src="https://cdn.tailwindcss.com"></script>  
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">  
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>  
+    
+    <link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#047857">
+<link rel="apple-touch-icon" href="icon-192.png">
+
     <style>  
         body { font-family: 'Plus Jakarta Sans', sans-serif; }  
         .grid-card { transition: all 0.3s ease; }  
@@ -550,7 +555,17 @@ async function handleDownload(withQuote) {
     await downloadScreenshot(withQuote);  
     cancelDownload(); // Kembali ke tombol utama setelah selesai  
 }  
-  
-    </script>  
+
+
+        
+  // Registrasi Service Worker
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js')
+      .then(() => console.log("Service Worker Registered"))
+      .catch((err) => console.log("Service Worker Failed", err));
+  }
+</script>
+        
+
 </body>  
 </html>
